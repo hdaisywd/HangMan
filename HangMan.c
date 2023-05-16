@@ -5,16 +5,23 @@
 #include <ncurses.h>
 #include <locale.h>
 
-#define size 125
+#define WORD_SIZE 125
+#define MAX_LIFE 5
 
 void GotoXY(int x, int y)
 {
     move(y,x);
 }
 
-char problem[size];
-int visited[size];
-int life = 5;
+typedef struct coord
+{
+    int x_coord;
+    int y_coord;
+} COORD;
+
+char problem[WORD_SIZE];
+int visited[WORD_SIZE];
+int life = MAX_LIFE;
 int count = 0;
 
 // 파일로 들어가서 글자 읽어오기
@@ -24,14 +31,14 @@ void LoadWord()
     fs = fopen("words.txt", "r");   // 파일을 열어주세용
 
     srand(time(NULL));  // 매번 랜덤한 글자 주기
-    int idx = rand() % size;
+    int idx = rand() % WORD_SIZE;
 
-    char strTmp[size];
+    char strTmp[WORD_SIZE];
     char *pStr;
     int line_num = 0;
     // feof (파일의 끝을 알려주는 것) 즉, 끝까지 읽지 않았다면 반복해주세요
     while (!feof(fs)){
-        pStr = fgets(strTmp, sizeof(strTmp), fs);
+        pStr = fgets(strTmp, sizeof(strTmp), fs); //아오
         line_num++;
         if (line_num == idx) {
             strcpy(problem, pStr);
@@ -43,28 +50,28 @@ void LoadWord()
 
 void DrawMan()
 {
-    if (life == 5)
+    if (life == MAX_LIFE)
     {
         GotoXY(48, 10);
         printw("◜---◝\n");
         GotoXY(48, 11);
         printw("◟---◞\n");
     }
-    else if (life == 4)
+    else if (life == MAX_LIFE-1)
     {
         GotoXY(50, 12);
         printw("|\n");
         GotoXY(50, 13);
         printw("|\n");
     }
-    else if (life == 3)
+    else if (life == MAX_LIFE-2)
     {
         GotoXY(49, 14);
         printw("/  \\\n");
         GotoXY(48, 15);
         printw("/    \\\n");
     }
-    else if (life == 2)
+    else if (life == MAX_LIFE-3)
     {
         GotoXY(50, 16);
         printw("|\n");
@@ -94,11 +101,6 @@ void PrintMap()
     }
 }
 
-void CheckInput()
-{
-
-}
-
 void InputWord()
 {
     char guess;
@@ -108,9 +110,7 @@ void InputWord()
     {
         GotoXY(43, 23+line);
         int found = 0;
-        //scanf쓰면 안된다. 왜? 엔터칠때까지 기다리는건 다 똑같은거 아닌지?
-        //enter가 아니어도 바로바로 반영 되는 것 고치기
-        guess = getch();
+        guess = getch();    //enter 안 쳐도 반영되게 하기
         for (int i=0; i < probLen; i++){
             if (guess == problem[i] && !visited[i])
             {
@@ -143,7 +143,6 @@ void InputWord()
             life--;
         }
 
-        //이미 프린트 된 한줄만 지우는건 어떻게 못하는건지?
         getchar();
         line++;
     }
@@ -186,7 +185,6 @@ int main(void)
     refresh();
     getch();    //어떤 키를 입력하든 해당 키값을 반환하며 즉식 종료한다
                 //콘솔 입력함수. scanf와 달리 엔터를 누르지 않아도 반환한다
-                //마지막에 왜 꼭 하나 써줘야 하는지? 자세히 찾아보기 
 
     endwin();   //curses 모드 종료
 
